@@ -12,21 +12,9 @@ var
     commandString : TCommandString;
     keepGoing : boolean;
     line : string;
+    currentTopic : string;
 
 
-
-procedure showNotes(commandWords: array of string);
-var
-    counter : integer;
-    note : PNote;
-begin
-    writeln('notes: ');
-    for counter := 0 to notes.count - 1 do
-    begin
-        note := notes[counter];
-        writeln(FormatDateTime('YYYY-MM-DD',note^.date), ' - ', note^.text);
-    end;
-end;
 
 procedure printNoteList(header: string; noteList : TFPList);
 var
@@ -40,6 +28,30 @@ begin
         writeln(FormatDateTime('YYYY-MM-DD',note^.date), ' - ', note^.text);
     end;
 end;
+
+
+procedure showNotes(commandWords: array of string);
+begin
+    printNoteList('All Notes', notes.topicNotes[currentTopic]);
+end;
+
+
+procedure showTopics(commandString: TCommandString);
+var
+    counter : integer;
+    topic : string;
+begin
+    writeln('Topics: ');
+    for counter := 0 to notes.topics.count - 1 do
+    begin
+        topic := notes.topics[counter];
+        if topic = '' then
+            topic := '<default>';
+        writeln(' - ', topic);
+    end;
+end;
+
+
 
 
 procedure searchNotes(commandString: TCommandString);
@@ -65,18 +77,17 @@ begin
     freeAndNil(foundNotes);
 end;
 
+procedure setCurrentTopic(commandString: TCommandString);
+begin
+    currentTopic := commandString.getRemaining;
+end;
+
 
 procedure processCommand(commandString: TCommandString);
 var
     words : array of string;
     command : string;
 begin
-    // if commandString[1] = ':' then
-    //     commandString := midStr(commandString, 2, length(commandString) - 1);
-    
-    // words := splitString(commandString, ' ');
-    // command := words[0];
-
     command := commandString.popWord;
 
     case command of
@@ -84,6 +95,8 @@ begin
         'w', 'write': notesFile.save(notes);
         'p', 'print': showNotes(words);
         's', 'search': searchNotes(commandString);
+        't', 'topic': setCurrentTopic(commandString);
+        'topics': showTopics(commandString);
     end;
 end;
 
@@ -99,7 +112,7 @@ begin
 
     while keepGoing do
     begin
-        write('> ');
+        write(currentTopic, '> ');
         readln(line);
 
         if line[1] = ':' then
@@ -109,7 +122,7 @@ begin
         end
         else
         begin
-            notes.addNote(line);
+            notes.addNote(currentTopic, line);
             line := '';
         end;
     end;

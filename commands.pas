@@ -38,7 +38,7 @@ end;
 
 function TCommandString.getRemaining : string;
 begin
-    result := midStr(_commandString, _nextWord, length(_commandString) - _nextWord);
+    result := midStr(_commandString, _nextWord, length(_commandString) - _nextWord + 1);
 end;
 
 
